@@ -1,0 +1,124 @@
+*
+{
+	margin: 0;
+	padding: 0;
+	outline: 0;
+	box-sizing: border-box;
+	border-collapse: collapse;
+	color: #313;
+}
+body
+{
+	font-family: sans;
+}
+h1
+{
+	text-align: center;
+	background: #dcf;
+}
+form, table
+{
+	box-shadow: 0.25em 0.25em 0.5em #ddd;
+}
+form
+{
+	display: flex;
+	background: #a8c;
+	padding: 0.25em;
+	align-items: flex-stretch;
+	justify-content: center;
+}
+label
+{
+}
+input
+{
+	border: none;
+	line-height: 1em;
+	font-size: 1rem;
+	padding: 0 0.25em;
+}
+input[type="date"]
+{
+	flex-shrink: 1;
+	min-width: 5em;
+}
+input[type="submit"]
+{
+	background: #638;
+	color: #ede;
+}
+input:first-of-type
+{
+	border-radius: 0.25em 0 0 0.25em;
+	margin-left: 0.25em;
+}
+input:last-of-type
+{
+	border-radius: 0 0.25em 0.25em 0;
+}
+table
+{
+	margin: 1em auto;
+	text-align: left;
+	width: auto;
+	max-width: 100%;
+}
+th
+{
+	background: #a8c;
+}
+td, th
+{
+	padding: 0 0.5em;
+}
+th:nth-child(1)
+{
+	width: 1em;
+}
+td:nth-child(3)
+{
+	text-align: right;
+}
+tbody:nth-child(even)
+{
+	background: #dcf;
+}
+tr:nth-child(3) td:first-child
+{
+	visibility: hidden;
+}
+@media print
+{
+	* {
+		color: #000;
+		box-shadow: none!important;
+	}
+	table {
+		width: 100%;
+		margin: 0;
+	}
+	form, h1
+	{
+		background: none;
+		text-align: left;
+		justify-content: left;
+	}
+	form *
+	{
+		padding: 0;
+		margin: 0;
+	}
+	input[type=submit] {
+		display: none;
+	}
+	thead, thead *
+	{
+		background: #000;
+		color: #fff;
+	}
+	tbody:nth-child(even)
+	{
+		background: #ddd;
+	}
+}
