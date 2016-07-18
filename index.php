@@ -1,4 +1,4 @@
-<!DOCTYPE html><?php #TODO: Filter by cash closed instead of date?>
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>Ramcash History Viewer</title>
@@ -13,6 +13,7 @@
 			<a rel="next" href="?date=<?php echo tomorrow()?>"></a>
 		</form>
 <?php
+require_once("include/db.php");
 require_once("config.php");
 $sql=<<<EOQ
 select
@@ -132,6 +133,7 @@ function render_data($data) {
 	}
 }
 if($date=validate_date()) {
+	
 	$db=new mysqli($config["host"], $config["user"], $config["password"], $config["db"]);
 	if($db->connect_errno) {
 		fail("Connection", $db->connect_errno, $db->connect_error);
