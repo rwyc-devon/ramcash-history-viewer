@@ -25,6 +25,35 @@ form
 	justify-content: center;
 	box-shadow: 0.25em 0.25em 0.5em #ddd;
 }
+form a
+{
+	flex-grow: 1;
+	position: relative;
+}
+form a[rel="prev"]::before,
+form a[rel="next"]::before
+{
+	position: absolute;
+	content: "";
+	width: 0;
+	height: 0;
+	border-width: 0.5em;
+	border-style: solid;
+	border-color: transparent #638;
+	top: 50%;
+	margin-top: -0.5em;
+}
+form a[rel="prev"]::before
+{
+	border-left: none;
+	left: 0;
+}
+form a[rel="next"]::before
+{
+
+	border-right: none;
+	right: 0;
+}
 input
 {
 	border: none;

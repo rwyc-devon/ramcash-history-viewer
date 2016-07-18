@@ -7,8 +7,10 @@
 	<body>
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
+			<a rel="prev" href="?date=<?php echo yesterday()?>"></a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
 			<input type="submit"></input>
+			<a rel="next" href="?date=<?php echo tomorrow()?>"></a>
 		</form>
 <?php
 require_once("config.php");
@@ -48,7 +50,21 @@ function fail($action, $errno, $err) {
 	echo tag("div", ["class"=>"error"], "$action failed (Error $errno):", tag("code", false, $err));
 }
 function validate_date() {
-	return (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
+	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
+}
+function yesterday() {
+	if(!($date=validate_date())) return "";
+	$interval=new DateInterval("P1D");
+	$datetime=new DateTime($date);
+	$newdate=$datetime->sub($interval);
+	return $newdate->format("Y-m-d");
+}
+function tomorrow() {
+	if(!($date=validate_date())) return "";
+	$interval=new DateInterval("P1D");
+	$datetime=new DateTime($date);
+	$newdate=$datetime->add($interval);
+	return $newdate->format("Y-m-d");
 }
 function tag($name, $attributes = false, ...$contents)
 {
