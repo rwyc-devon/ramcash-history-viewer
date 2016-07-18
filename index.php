@@ -21,8 +21,10 @@ select
 	any_value(RECEIPTS.DATENEW)  as "date",
 	any_value(PAYMENTS.TOTAL)    as "amount",
 	any_value(PAYMENTS.PAYMENT)  as "payment",
+	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER) as "subtotal",
 	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * (1 + TAXES.RATE)) as "total",
-	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * TAXES.RATE) as "taxes"
+	sum(if(TAXES.NAME="Sales Tax", TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * TAXES.RATE, 0)) as "sales_tax",
+	max(if(TAXES.NAME="Tax Exempt", TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * TAXES.RATE, 0)) as "pst_exempt"
 
 from RECEIPTS
 
@@ -89,14 +91,22 @@ function tag($name, $attributes = false, ...$contents)
 	return "<$name$attributeString>$content</$name>";
 }
 function process_results($results) {
+	global $config;
 	$data=[];
-	$totals=[];
+	$totals=[
+		"sales_tax"=>0,
+		"pst_exempt"=>0,
+		"subtotal"=>0,
+		"grand"=>0,
+	];
 	while($result=$results->fetch_assoc()) {
 		$id=$result["id"];
 		if(!isset($data[$id])) {
 			$data[$id]=["payments"=>[], "total"=>0];
 			$totals["grand"]+=$result["total"];
-			$totals["taxes"]+=$result["taxes"];
+			$totals["sales_tax"]+=$result["sales_tax"];
+			$totals["pst_exempt"]+=$result["pst_exempt"];
+			$totals["subtotal"]+=$result["subtotal"];
 		}
 		$data[$id]["date"]=$result["date"];
 		$data[$id]["total_sales"]=$result["total"];
@@ -106,10 +116,25 @@ function process_results($results) {
 	foreach($data as $item) {
 		ksort($item["payments"]);
 	}
+	$gstRate=$config["gst"]/100;
+	$pstRate=$config["pst"]/100;
+	$totals["pst"]=($pstRate/($pstRate+$gstRate))*$totals["sales_tax"];
+	$totals["gst"]=($gstRate/($pstRate+$gstRate))*$totals["sales_tax"]+$totals["pst_exempt"];
+	$totals["taxes"]=$totals["pst"]+$totals["gst"];
 	return ["totals"=>$totals, "data"=>$data];
 }
 function render_data($data) {
-	echo $data["totals"]["grand"]." ".$data["totals"]["taxes"];
+	echo tag("ul", ["id"=>"totals"],
+		tag("li", ["id"=>"subtotal"], number_format($data["totals"]["subtotal"], 2)),
+		tag("li", ["id"=>"taxes"],
+			tag("ul", false, 
+				tag("li", ["id"=>"pst"],      number_format($data["totals"]["pst"],      2)),
+				tag("li", ["id"=>"gst"],      number_format($data["totals"]["gst"],      2)),
+				tag("li", ["class"=>"total"],    number_format($data["totals"]["taxes"],    2))
+			)
+		),
+		tag("li", ["class"=>"total"],    number_format($data["totals"]["grand"],    2))
+	);
 	foreach($data["data"] as $id=>$item) {
 		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
 		$payments="";
@@ -133,7 +158,6 @@ function render_data($data) {
 				tag("time", false, $item["date"])
 			),
 			tag("ul", ["class"=>"payments"], $payments)
-			#tag("span", ["class"=>"sales"], round($item["total_sales"], 2))
 		));
 	}
 }
