@@ -139,7 +139,7 @@ input:last-of-type
 }
 #taxes li:not(.total)
 {
-	background: #ddd;
+	background: #bbb;
 	padding: 0 0.25em;
 	margin: 0.25em;
 	border-radius: 0.375em;
@@ -182,7 +182,7 @@ section
 }
 label:nth-child(even) section
 {
-	background: #eee;
+	background: #e3e3e3;
 }
 section.warning
 {
@@ -229,7 +229,7 @@ section header time
 {
 	display: inline-block;
 	margin: 0 0.125em;
-	background: #ccc;
+	background: #bbb;
 	border-radius: 0.375em;
 	overflow: hidden;
 	display: flex;
