@@ -21,7 +21,8 @@ select
 	any_value(RECEIPTS.DATENEW)  as "date",
 	any_value(PAYMENTS.TOTAL)    as "amount",
 	any_value(PAYMENTS.PAYMENT)  as "payment",
-	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * (1 + TAXES.RATE)) as "total"
+	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * (1 + TAXES.RATE)) as "total",
+	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * TAXES.RATE) as "taxes"
 
 from RECEIPTS
 
@@ -89,10 +90,13 @@ function tag($name, $attributes = false, ...$contents)
 }
 function process_results($results) {
 	$data=[];
+	$totals=[];
 	while($result=$results->fetch_assoc()) {
 		$id=$result["id"];
 		if(!isset($data[$id])) {
 			$data[$id]=["payments"=>[], "total"=>0];
+			$totals["grand"]+=$result["total"];
+			$totals["taxes"]+=$result["taxes"];
 		}
 		$data[$id]["date"]=$result["date"];
 		$data[$id]["total_sales"]=$result["total"];
@@ -102,10 +106,11 @@ function process_results($results) {
 	foreach($data as $item) {
 		ksort($item["payments"]);
 	}
-	return $data;
+	return ["totals"=>$totals, "data"=>$data];
 }
 function render_data($data) {
-	foreach($data as $id=>$item) {
+	echo $data["totals"]["grand"]." ".$data["totals"]["taxes"];
+	foreach($data["data"] as $id=>$item) {
 		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
 		$payments="";
 		foreach($item["payments"] as $method=>$payment) {
@@ -133,27 +138,7 @@ function render_data($data) {
 	}
 }
 if($date=validate_date()) {
-	
-	$db=new mysqli($config["host"], $config["user"], $config["password"], $config["db"]);
-	if($db->connect_errno) {
-		fail("Connection", $db->connect_errno, $db->connect_error);
-	}
-	elseif(!($q = $db->prepare($sql))) {
-		fail("Prepare", $db->errno, $db->error);
-	}
-	elseif(!$q->bind_param("s", $date)) {#, $date)) {
-		fail("Parameter Binding", $q->errno, $q->error);
-	}
-	elseif(!$q->execute()) {
-		fail("Execute", $q->errno, $q->error);
-	}
-	elseif(!($results = $q->get_result())) {
-		fail("Getting Results", $q->errno, $q->error);
-	}
-	else {
-		$data=process_results($results);
-		render_data($data);
-	}
+	render_data(process_results(query($sql, ["s", $date])));
 }
 	?>
 	</body>
