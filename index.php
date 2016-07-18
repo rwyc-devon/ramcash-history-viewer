@@ -110,7 +110,7 @@ function process_results($results) {
 		}
 		$data[$id]["date"]=$result["date"];
 		$data[$id]["total_sales"]=$result["total"];
-		$data[$id]["payments"][$result["payment"]]=$result["amount"];
+		array_push($data[$id]["payments"], [$result["payment"], $result["amount"]]);
 		$data[$id]["total_payments"]+=$result["amount"];
 	}
 	foreach($data as $item) {
@@ -138,7 +138,9 @@ function render_data($data) {
 	foreach($data["data"] as $id=>$item) {
 		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
 		$payments="";
-		foreach($item["payments"] as $method=>$payment) {
+		foreach($item["payments"] as $p) {
+			$method=$p[0];
+			$payment=$p[1];
 			$payments.=tag("li", ["class"=>"payment"],
 				tag("span", ["class"=>"method"], $method),
 				tag("span", ["class"=>"amount"], number_format($payment, 2))
