@@ -48,7 +48,7 @@ where
 
 group by
 	RECEIPTS.DATENEW,
-	PAYMENTS.PAYMENT
+	PAYMENTS.ID
 EOQ;
 function fail($action, $errno, $err) {
 	echo tag("div", ["class"=>"error"], "$action failed (Error $errno):", tag("code", false, $err));
