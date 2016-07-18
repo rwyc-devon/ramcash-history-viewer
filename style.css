@@ -16,10 +16,6 @@ h1
 	text-align: center;
 	background: #dcf;
 }
-form, table
-{
-	box-shadow: 0.25em 0.25em 0.5em #ddd;
-}
 form
 {
 	display: flex;
@@ -27,9 +23,7 @@ form
 	padding: 0.25em;
 	align-items: flex-stretch;
 	justify-content: center;
-}
-label
-{
+	box-shadow: 0.25em 0.25em 0.5em #ddd;
 }
 input
 {
@@ -57,46 +51,11 @@ input:last-of-type
 {
 	border-radius: 0 0.25em 0.25em 0;
 }
-table
-{
-	margin: 1em auto;
-	text-align: left;
-	width: auto;
-	max-width: 100%;
-}
-th
-{
-	background: #a8c;
-}
-td, th
-{
-	padding: 0 0.5em;
-}
-th:nth-child(1)
-{
-	width: 1em;
-}
-td:nth-child(3)
-{
-	text-align: right;
-}
-tbody:nth-child(even)
-{
-	background: #dcf;
-}
-tr:nth-child(3) td:first-child
-{
-	visibility: hidden;
-}
 @media print
 {
 	* {
 		color: #000;
 		box-shadow: none!important;
-	}
-	table {
-		width: 100%;
-		margin: 0;
 	}
 	form, h1
 	{
@@ -112,13 +71,132 @@ tr:nth-child(3) td:first-child
 	input[type=submit] {
 		display: none;
 	}
-	thead, thead *
-	{
-		background: #000;
-		color: #fff;
-	}
-	tbody:nth-child(even)
-	{
-		background: #ddd;
-	}
+}
+section
+{
+	background: #fff;
+	font-family: monospace;
+	display: flex;
+	line-height: 1.25em;
+	font-size: 1.125em;
+	align-items: center;
+	padding: 0.25em 0;
+}
+label:nth-child(even) section
+{
+	background: #eee;
+}
+section.warning
+{
+	background: #fcc;
+}
+label:nth-child(even) section.warning
+{
+	background: #ebb;
+}
+section *
+{
+	vertical-align: middle;
+}
+section input
+{
+	margin-right: 0.25em;
+}
+section header .id
+{
+	margin-right: 0.25em;
+	font-weight: bold;
+	background: #222;
+	color: #fff;
+	padding: 0 0.25em;
+	border-radius: 0.375em;
+	display: inline-block;
+	min-width: 6ex;
+	text-align: center;
+}
+section header time
+{
+	display: inline-block;
+}
+.payments
+{
+	list-style-type: none;
+	display: inline-block;
+	padding: 0 0.125em;
+	display: flex;
+	flex-grow: 1;
+	align-items: center;
+}
+.payments li
+{
+	display: inline-block;
+	margin: 0 0.125em;
+	background: #ccc;
+	border-radius: 0.375em;
+	overflow: hidden;
+	display: flex;
+}
+.warning .payments li
+{
+	background: #d88;
+}
+.payments li .method
+{
+	padding: 0 0.25em 0 0.5em;
+	background: #222;
+	color: #fff;
+}
+.warning .payment .method,
+.warning header .id
+{
+	background: #622;
+}
+.payments li .amount
+{
+	padding: 0 0.5em 0 0.25em;
+}
+.payments .spacer
+{
+	flex: 1;
+}
+.payments .total
+{
+	padding: 0 0.25em 0 0.5em;
+	font-weight: bold;
+	margin-right: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.payments .total::after
+{
+	content: "paid";
+	font-weight: normal;
+	margin-left: 0.5ex;
+	font-style: italic;
+}
+.payments .sales
+{
+	padding: 0 0.5em 0 0.25em;
+	margin-left: 0;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	font-weight: bold;
+}
+.payments .sales::before
+{
+	font-weight: normal;
+	content: "=";
+	margin-right: 0.5em;
+}
+.warning .payments .sales::before
+{
+	font-weight: bold;
+	content: "≠"
+}
+.payments .sales::after
+{
+	content: "sold";
+	font-weight: normal;
+	margin-left: 0.5ex;
+	font-style: italic;
 }

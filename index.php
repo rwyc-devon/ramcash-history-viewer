@@ -14,11 +14,11 @@
 require_once("config.php");
 $sql=<<<EOQ
 select
-	any_value(TICKETS.TICKETID)          as "id",
-	any_value(RECEIPTS.DATENEW)          as "date",
-	any_value(format(PAYMENTS.TOTAL, 2)) as "amount",
-	any_value(PAYMENTS.PAYMENT)          as "payment",
-	format(sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * (1 + TAXES.RATE)), 2) as "total"
+	any_value(TICKETS.TICKETID)  as "id",
+	any_value(RECEIPTS.DATENEW)  as "date",
+	any_value(PAYMENTS.TOTAL)    as "amount",
+	any_value(PAYMENTS.PAYMENT)  as "payment",
+	sum(TICKETLINES.PRICE * TICKETLINES.UNITS * TICKETLINES.PRICEMULTIPLIER * (1 + TAXES.RATE)) as "total"
 
 from RECEIPTS
 
@@ -45,7 +45,7 @@ group by
 	PAYMENTS.PAYMENT
 EOQ;
 function fail($action, $errno, $err) {
-	echo "<div class='error'>$action failed (Error $errno: <code>$err</code>)</div>\n";
+	echo tag("div", ["class"=>"error"], "$action failed (Error $errno):", tag("code", false, $err));
 }
 function validate_date() {
 	return (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
@@ -70,6 +70,51 @@ function tag($name, $attributes = false, ...$contents)
 	}
 	return "<$name$attributeString>$content</$name>";
 }
+function process_results($results) {
+	$data=[];
+	while($result=$results->fetch_assoc()) {
+		$id=$result["id"];
+		if(!isset($data[$id])) {
+			$data[$id]=["payments"=>[], "total"=>0];
+		}
+		$data[$id]["date"]=$result["date"];
+		$data[$id]["total_sales"]=$result["total"];
+		$data[$id]["payments"][$result["payment"]]=$result["amount"];
+		$data[$id]["total_payments"]+=$result["amount"];
+	}
+	foreach($data as $item) {
+		ksort($item["payments"]);
+	}
+	return $data;
+}
+function render_data($data) {
+	foreach($data as $id=>$item) {
+		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
+		$payments="";
+		foreach($item["payments"] as $method=>$payment) {
+			$payments.=tag("li", ["class"=>"payment"],
+				tag("span", ["class"=>"method"], $method),
+				tag("span", ["class"=>"amount"], number_format($payment, 2))
+			);
+		}
+		$payments.=tag("li", ["class"=>"spacer"]);
+		$payments.=tag("li", ["class"=>"total"],
+			number_format($item["total_payments"], 2)
+		);
+		$payments.=tag("li", ["class"=>"sales"],
+			number_format($item["total_sales"], 2)
+		);
+		echo tag("label", false, tag("section", ["id"=>"receipt_$id", "class"=>$class], 
+			tag("input", ["type"=>"checkbox"]), 
+			tag("header", false, 
+				tag("span", ["class"=>"id"], $id),
+				tag("time", false, $item["date"])
+			),
+			tag("ul", ["class"=>"payments"], $payments)
+			#tag("span", ["class"=>"sales"], round($item["total_sales"], 2))
+		));
+	}
+}
 if($date=validate_date()) {
 	$db=new mysqli($config["host"], $config["user"], $config["password"], $config["db"]);
 	if($db->connect_errno) {
@@ -88,22 +133,8 @@ if($date=validate_date()) {
 		fail("Getting Results", $q->errno, $q->error);
 	}
 	else {
-		$prev="";
-		echo "\t\t<table>\n\t\t\t<thead>\n\t\t\t\t<tr><th></th><th>#</th><th>Date</th><th>Payment</th><th>Method</th><th>Total</th></tr>\n\t\t\t</thead>\n\t\t\t<tbody>\n";
-		while($result=$results->fetch_assoc()) {
-			$id=$checkbox="";
-			if($result["id"]!=$prev) {
-				if($prev) {
-					echo "\t\t\t</tbody>\n\t\t\t<tbody>\n";
-				}
-				$checkbox="<input type='checkbox'>";
-				$id=$result["id"];
-				$total=$result["total"];
-			}
-			echo "\t\t\t\t<tr><td><input type='checkbox'></td><td>$id</td><td>${result["date"]}</td><td>${result["amount"]}</td><td>${result["payment"]}</td><td>$total</td></tr>\n";
-			$prev=$result["id"];
-		}
-		echo "\t\t\t</tbody>\n\t\t</table>\n";
+		$data=process_results($results);
+		render_data($data);
 	}
 }
 	?>
