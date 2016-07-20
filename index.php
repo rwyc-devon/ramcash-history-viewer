@@ -94,13 +94,14 @@ function process_results($results) {
 		"sales_tax"=>0,
 		"pst_exempt"=>0,
 		"subtotal"=>0,
-		"grand"=>0,
+		"sales"=>0,
+		"payments"=>0,
 	];
 	while($result=$results->fetch_assoc()) {
 		$id=$result["id"];
 		if(!isset($data[$id])) {
 			$data[$id]=["payments"=>[], "total"=>0];
-			$totals["grand"]+=$result["total"];
+			$totals["sales"]+=$result["total"];
 			$totals["sales_tax"]+=$result["sales_tax"];
 			$totals["pst_exempt"]+=$result["pst_exempt"];
 			$totals["subtotal"]+=$result["subtotal"];
@@ -108,6 +109,7 @@ function process_results($results) {
 		$data[$id]["date"]=$result["date"];
 		$data[$id]["total_sales"]=$result["total"];
 		array_push($data[$id]["payments"], [$result["payment"], $result["amount"]]);
+		$totals["payments"]+=$result["amount"];
 		$data[$id]["total_payments"]+=$result["amount"];
 	}
 	foreach($data as $item) {
@@ -121,7 +123,7 @@ function process_results($results) {
 	return ["totals"=>$totals, "data"=>$data];
 }
 function render_data($data) {
-	echo tag("ul", ["id"=>"totals"],
+	echo tag("ul", ["id"=>"totals", "class"=>(number_format($data["totals"]["payments"])==number_format($data["totals"]["sales"])?NULL:"warning")],
 		tag("li", ["id"=>"subtotal"], number_format($data["totals"]["subtotal"], 2)),
 		tag("li", ["id"=>"taxes"],
 			tag("ul", false, 
@@ -130,7 +132,8 @@ function render_data($data) {
 				tag("li", ["class"=>"total"],    number_format($data["totals"]["taxes"],    2))
 			)
 		),
-		tag("li", ["class"=>"total"],    number_format($data["totals"]["grand"],    2))
+		tag("li", ["class"=>"total"],    number_format($data["totals"]["sales"],    2)),
+		tag("li", ["class"=>"payments"],    number_format($data["totals"]["payments"],    2))
 	);
 	foreach($data["data"] as $id=>$item) {
 		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance

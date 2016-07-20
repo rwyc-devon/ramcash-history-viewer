@@ -110,10 +110,30 @@ input:last-of-type
 	background: #444;
 	padding: 0.25em;
 }
+#totals.warning
+{
+	background: #600;
+}
 #totals > li
 {
 	color: #fff;
 	font-weight: bold;
+}
+#totals .payments::before
+{
+	content: "=";
+	margin-right:0.25ex;
+}
+#totals.warning .payments::before
+{
+	content: "≠"
+}
+#totals .payments::after
+{
+	content: "paid";
+	font-weight: normal;
+	font-style: italic;
+	margin-left: 0.5ex;
 }
 #subtotal::before
 {
