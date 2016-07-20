@@ -50,9 +50,6 @@ group by
 	RECEIPTS.DATENEW,
 	PAYMENTS.ID
 EOQ;
-function fail($action, $errno, $err) {
-	echo tag("div", ["class"=>"error"], "$action failed (Error $errno):", tag("code", false, $err));
-}
 function validate_date() {
 	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
 }
