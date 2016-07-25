@@ -108,7 +108,18 @@ function process_results($results) {
 		}
 		$data[$id]["date"]=$result["date"];
 		$data[$id]["total_sales"]=$result["total"];
-		array_push($data[$id]["payments"], [$result["payment"], $result["amount"]]);
+		$payment=$result["payment"];
+		preg_match('/^(.+?)(out|refund)?$/', $result["payment"], $matches);
+		$payment=$matches[1];
+		if($payment=="paper" || $payment=="paperin") {
+			$payment="paper";
+		}
+		elseif($payment=="magcard") {
+			$payment="card";
+		}
+		$type=isset($matches[2])?"refund":"sale";
+		array_push($data[$id]["payments"], [$payment, $result["amount"]]);
+		$data[$id]["type"]=$type;
 		$totals["payments"]+=$result["amount"];
 		$data[$id]["total_payments"]+=$result["amount"];
 	}
@@ -137,6 +148,7 @@ function render_data($data) {
 	);
 	foreach($data["data"] as $id=>$item) {
 		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
+		$class.=" ".$item["type"];
 		$payments="";
 		foreach($item["payments"] as $p) {
 			$method=$p[0];
