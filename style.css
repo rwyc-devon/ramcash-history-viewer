@@ -224,7 +224,7 @@ label:nth-child(even) section
 }
 section.warning
 {
-	background: #ffc;
+	background: #fcc;
 }
 label:nth-child(even) section.warning
 {
