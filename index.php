@@ -147,7 +147,8 @@ function render_data($data) {
 		tag("li", ["class"=>"payments"],    number_format($data["totals"]["payments"],    2))
 	);
 	foreach($data["data"] as $id=>$item) {
-		$class=abs(round($item["total_sales"],2)==round($item["total_payments"],2))? "": "warning"; #warn if totals don't balance
+		$diff=abs(round($item["total_sales"],2)-round($item["total_payments"],2));
+		$class=$diff==0? "": "warning"; #warn if totals don't balance
 		$class.=" ".$item["type"];
 		$payments="";
 		foreach($item["payments"] as $p) {
@@ -165,6 +166,11 @@ function render_data($data) {
 		$payments.=tag("li", ["class"=>"sales"],
 			number_format($item["total_sales"], 2)
 		);
+		if($diff!=0) {
+			$payments.=tag("li", ["class"=>"difference"],
+				number_format($diff,2)
+			);
+		}
 		echo tag("label", false, tag("section", ["id"=>"receipt_$id", "class"=>$class], 
 			tag("input", ["type"=>"checkbox"]), 
 			tag("header", false, 

@@ -336,3 +336,15 @@ section header time
 	margin-left: 0.5ex;
 	font-style: italic;
 }
+.payments .difference
+{
+	padding: 0 0.5em;
+	font-weight: bold;
+}
+.payments .difference::before
+{
+	content: "diff:";
+	font-weight: normal;
+	margin-right: 0.5ex;
+	font-style: italic;
+}
