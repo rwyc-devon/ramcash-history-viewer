@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?php
+require_once("include/db.php");
+require_once("config.php");
+?><!DOCTYPE html>
 <html>
 	<head>
 		<title>Ramcash History Viewer</title>
@@ -7,15 +10,17 @@
 	<body>
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
-			<a rel="prev" href="?date=<?php echo next_date()?>"></a>
+			<a rel="prev" href="<?php
+echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
+			?>"></a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
 			<input type="submit"></input>
-			<a rel="next" href="?date=<?php echo prev_date()?>"></a>
+			<a rel="next" href="<?php
+echo closedcash()["end"]->add(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
+			?>"></a>
 		</form>
 <?php
-require_once("include/db.php");
-require_once("config.php");
 $sql=<<<EOQ
 select
 	any_value(CLOSEDCASH.DATESTART) as "start",
@@ -59,8 +64,22 @@ function validate_time() {
 function validate_date() {
 	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
 }
-function date_range() {
-
+function closedcash($date=false, $time=false) {
+	static $results=[];
+	$date=$date ?: validate_date();
+	$time=$time ?: validate_time() ?: [0, 12, 0];
+	if($date) {
+		$key="$date $time";
+		if($results[$key]) return $results["$date $time"];
+		$result=query(
+			"select DATESTART as start, DATEEND as end from CLOSEDCASH where date_add(date_add(?, interval ? hour), interval ? minute) between DATESTART and DATEEND",
+			["sii", $date, $time[1], $time[2]]
+		)->fetch_assoc();
+		$start=new DateTime($result["start"]);
+		$end=new DateTime($result["end"]);
+		return $results[$key]=["start"=>$start, "end"=>$end];
+	}
+	return false;
 }
 function prev_date() {
 	if(!($date=validate_date())) return "";
