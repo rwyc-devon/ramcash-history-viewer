@@ -7,11 +7,11 @@
 	<body>
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
-			<a rel="prev" href="?date=<?php echo yesterday()?>"></a>
+			<a rel="prev" href="?date=<?php echo next_date()?>"></a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
 			<input type="submit"></input>
-			<a rel="next" href="?date=<?php echo tomorrow()?>"></a>
+			<a rel="next" href="?date=<?php echo prev_date()?>"></a>
 		</form>
 <?php
 require_once("include/db.php");
@@ -59,14 +59,17 @@ function validate_time() {
 function validate_date() {
 	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
 }
-function yesterday() {
+function date_range() {
+
+}
+function prev_date() {
 	if(!($date=validate_date())) return "";
 	$interval=new DateInterval("P1D");
 	$datetime=new DateTime($date);
 	$newdate=$datetime->sub($interval);
 	return $newdate->format("Y-m-d");
 }
-function tomorrow() {
+function next_date() {
 	if(!($date=validate_date())) return "";
 	$interval=new DateInterval("P1D");
 	$datetime=new DateTime($date);
