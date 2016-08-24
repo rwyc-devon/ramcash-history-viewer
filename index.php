@@ -58,16 +58,16 @@ group by
 	RECEIPTS.DATENEW,
 	PAYMENTS.ID
 EOQ;
-function validate_time() {
-	return (preg_match('/^(\d{1,2})[:.](\d{2})$/', $_GET["time"], $m) && $m[1] >= 0 && $m[1] <= 23 && m[2]>=0 && m[2]<=59) ? $m : false;
+function validate_time($time=false) {
+	return (preg_match('/^(\d{1,2})[:.](\d{2})$/', $time ?: $_GET["time"], $m) && $m[1] >= 0 && $m[1] <= 23 && m[2]>=0 && m[2]<=59) ? $m : false;
 }
-function validate_date() {
-	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
+function validate_date($date=false) {
+	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $date ?: $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
 }
 function closedcash($date=false, $time=false) {
 	static $results=[];
-	$date=$date ?: validate_date();
-	$time=$time ?: validate_time() ?: [0, 12, 0];
+	$date=validate_date($date);
+	$time=validate_time($time) ?: [0, 12, 0];
 	if($date) {
 		$key="$date $time";
 		if($results[$key]) return $results["$date $time"];
