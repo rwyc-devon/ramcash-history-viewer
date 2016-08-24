@@ -60,11 +60,23 @@ input
 	line-height: 1em;
 	font-size: 1rem;
 	padding: 0 0.25em;
+	border-left: 1px solid #666;
+}
+input:not([type="submit"])
+{
+	font-family: monospace;
 }
 input[type="date"]
 {
 	flex-shrink: 1;
 	min-width: 5em;
+	width: 8em;
+}
+input[type="time"]
+{
+	flex-shrink: 1;
+	min-width: 3.5em;
+	width: 5em;
 }
 input[type="submit"]
 {
@@ -75,6 +87,7 @@ input:first-of-type
 {
 	border-radius: 0.25em 0 0 0.25em;
 	margin-left: 0.25em;
+	border-left: none
 }
 input:last-of-type
 {
@@ -101,7 +114,8 @@ input:last-of-type
 		display: none;
 	}
 }
-#totals
+#totals,
+#closedcash
 {
 	padding-left: 0.25em;
 	display: flex;
@@ -109,15 +123,33 @@ input:last-of-type
 	list-style-type: none;
 	background: #444;
 	padding: 0.25em;
+	border-bottom: 1px solid #666;
+}
+#totals > li,
+#closedcash > li
+
+{
+	color: #fff;
+	font-weight: bold;
+}
+#closedcash li::before
+{
+	font-weight: normal;
+	font-style: italic;
+	margin-right: 0.5ex;
+}
+#start::before
+{
+	content: "start:";
+}
+#end::before
+{
+	margin-left: 1ex;
+	content: "end:";
 }
 #totals.warning
 {
 	background: #600;
-}
-#totals > li
-{
-	color: #fff;
-	font-weight: bold;
 }
 #totals .payments::before
 {
@@ -286,6 +318,18 @@ section header time
 .warning header .id
 {
 	background: #622;
+}
+.payments li .method-cash
+{
+	background: #161;
+}
+.payments li .method-note
+{
+	background: #631;
+}
+.payments li .method-card
+{
+	background: #416;
 }
 .payments li .amount
 {
