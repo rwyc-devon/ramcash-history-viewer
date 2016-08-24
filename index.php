@@ -17,7 +17,8 @@ echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
 			<input type="submit"></input>
 			<a rel="next" href="<?php
-echo closedcash()["end"]->add(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
+echo closedcash(closedcash()["end"]->add(new DateInterval("PT1M")))["end"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
+#var_dump($next_day);
 			?>"></a>
 		</form>
 <?php
@@ -66,11 +67,15 @@ function validate_date($date=false) {
 }
 function closedcash($date=false, $time=false) {
 	static $results=[];
+	if(is_a($date, "DateTime")) {
+		$time=$date->format("H:i");
+		$date=$date->format("Y-m-d");
+	}
 	$date=validate_date($date);
 	$time=validate_time($time) ?: [0, 12, 0];
 	if($date) {
-		$key="$date $time";
-		if($results[$key]) return $results["$date $time"];
+		$key="$date ${time[1]}:${time[2]}";
+		if($results[$key]) return $results["$key"];
 		$result=query(
 			"select DATESTART as start, DATEEND as end from CLOSEDCASH where date_add(date_add(?, interval ? hour), interval ? minute) between DATESTART and DATEEND",
 			["sii", $date, $time[1], $time[2]]
