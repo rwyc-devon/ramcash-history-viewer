@@ -319,7 +319,8 @@ section header time
 {
 	background: #622;
 }
-.payments li .method-cash
+.payments li .method-cash,
+.payments li .method-cheque
 {
 	background: #161;
 }
