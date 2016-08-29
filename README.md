@@ -33,11 +33,14 @@ Installation
 Copy `config.example.php` to `config.php` and edit for your mysql
 configuration. That's it!
 
+Issues
+------
+
 One thing to be especially careful about: make sure you set `pst_rate` and
 `gst_rate` in `config.php`. Unfortunately at this time we don't automatically
 figure it out, so if your records extend over multiple eras of tax rates, make
 sure to change the config before viewing old dates, otherwise your numbers will
-be off.
+be off. There are plans to fix this in the not-too-distant future.
 
 License
 -------
