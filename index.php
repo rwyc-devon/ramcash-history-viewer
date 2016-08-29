@@ -10,14 +10,14 @@ require_once("config.php");
 	<body>
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
-			<a rel="prev" href="<?php
+			<a id="prev-page" rel="prev" href="<?php
 if(closedcash())
 	echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
 			?>"></a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
 			<input type="submit"></input>
-			<a rel="next" href="<?php
+			<a id="next-page" rel="next" href="<?php
 if(closedcash())
 	echo closedcash(closedcash()["end"]->add(new DateInterval("PT1M")))["end"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
 			?>"></a>
@@ -227,5 +227,6 @@ if(($date=validate_date())) {
 	render_data(process_results(query($sql, ["sii", $date, $time[1], $time[2]])));
 }
 	?>
+	<script src="keyboard.js"></script>
 	</body>
 </html>
