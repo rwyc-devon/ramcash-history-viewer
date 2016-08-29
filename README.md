@@ -16,6 +16,17 @@ It'll show you a list of sales for a given day, with receipt numbers, each
 receipt broken down by patment if there are multiple payments, as well as
 per-day tax stuff.
 
+Requirements
+------------
+
+You need a basic LAMP stack on a machine that can access your openbravopos
+database (or the db host itself). This was not written with
+backwards-compatibility in mind, so you'll need at least PHP 7.
+
+If you're really stuck with php 5.x, it shouldn't be too hard to make it work;
+I think the main issue would just be new-style array literals (`[]` instead of
+`array()`). Pull requests welcome!
+
 Installation
 ------------
 
