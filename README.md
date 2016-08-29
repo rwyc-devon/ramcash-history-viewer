@@ -31,7 +31,7 @@ Installation
 ------------
 
 Copy `config.example.php` to `config.php` and edit for your mysql
-configuration. That's it!
+credentials and tax rates. That's it!
 
 Issues
 ------
