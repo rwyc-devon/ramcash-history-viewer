@@ -11,14 +11,15 @@ require_once("config.php");
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
 			<a rel="prev" href="<?php
-echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
+if(closedcash())
+	echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
 			?>"></a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
 			<input type="submit"></input>
 			<a rel="next" href="<?php
-echo closedcash(closedcash()["end"]->add(new DateInterval("PT1M")))["end"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
-#var_dump($next_day);
+if(closedcash())
+	echo closedcash(closedcash()["end"]->add(new DateInterval("PT1M")))["end"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
 			?>"></a>
 		</form>
 <?php
