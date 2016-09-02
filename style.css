@@ -54,6 +54,11 @@ form a[rel="next"]::before
 	border-right: none;
 	right: 0;
 }
+form a[rel="prev"]:not([href])::before,
+form a[rel="next"]:not([href])::before {
+	border-left-color: #a9c;
+	border-right-color: #a9c;
+}
 input
 {
 	border: none;

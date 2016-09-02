@@ -10,23 +10,29 @@ require_once("config.php");
 	<body>
 		<h1>Ramcash History Viewer</h1>
 		<form method="GET">
-			<a id="prev-page" rel="prev" href="<?php
+			<a id="prev-page" rel="prev" <?php
 if(closedcash())
-	echo closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
-			?>"></a>
-			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo validate_date()?>"></input>
-			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo validate_time()?validate_time()[0]:"12:00"?>"></input>
+	echo "href='" . closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i') . "'";
+			?>></a>
+			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo get_datetime()->format("Y-m-d")?>"></input>
+			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo get_datetime()->format("H:i")?>"></input>
 			<input type="submit"></input>
-			<a id="next-page" rel="next" href="<?php
-if(closedcash())
-	echo closedcash(closedcash()["end"]->add(new DateInterval("PT1M")))["end"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i');
-			?>"></a>
+			<a id="next-page" rel="next" <?php
+if(closedcash() && isset(closedcash()["end"])) {
+	$today_end=closedcash()["end"];
+	if($today_end) {
+		$tomorrow=closedcash($today_end->add(new DateInterval("PT1M")));
+		if($tomorrow && isset($tomorrow["end"])) {
+			$tomorrow_end=$tomorrow["end"]->sub(new DateInterval("PT1M"));
+			echo "href='".$tomorrow_end->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i')."'";
+		}
+	}
+}
+			?>></a>
 		</form>
 <?php
 $sql=<<<EOQ
 select
-	any_value(CLOSEDCASH.DATESTART) as "start",
-	any_value(CLOSEDCASH.DATEEND)   as "end",
 	any_value(TICKETS.TICKETID)     as "id",
 	any_value(RECEIPTS.DATENEW)     as "date",
 	any_value(PAYMENTS.TOTAL)       as "amount",
@@ -54,52 +60,55 @@ left join TAXES on
 	TICKETLINES.TAXID=TAXES.ID
 
 where
-	date_add(date_add(?, interval ? hour), interval ? minute) between CLOSEDCASH.DATESTART and CLOSEDCASH.DATEEND
+	CLOSEDCASH.MONEY=?
 
 group by
 	RECEIPTS.DATENEW,
 	PAYMENTS.ID
 EOQ;
-function validate_time($time=false) {
-	return (preg_match('/^(\d{1,2})[:.](\d{2})$/', $time ?: $_GET["time"], $m) && $m[1] >= 0 && $m[1] <= 23 && m[2]>=0 && m[2]<=59) ? $m : false;
-}
-function validate_date($date=false) {
-	return (preg_match('/^(\d{4})[-\/.](\d{2})[-\/.](\d{2})$/', $date ?: $_GET["date"], $m) && checkdate($m[2], $m[3], $m[1])) ? $_GET["date"] : "";
-}
-function closedcash($date=false, $time=false) {
-	static $results=[];
-	if(is_a($date, "DateTime")) {
-		$time=$date->format("H:i");
-		$date=$date->format("Y-m-d");
+#TODO: at some point we can switch to CLOSEDCASH id, saving on a bunch of probably expensive date logic
+function get_datetime() {
+	static $now=false;
+	if($now===false) $now=new DateTime(); #this way we don't have to worry if execution takes too long
+	if(isset($_GET["date"]) && (new DateTime($_GET["date"]))) {
+		$d=new DateTime($_GET["date"]);
 	}
-	$date=validate_date($date);
-	$time=validate_time($time) ?: [0, 12, 0];
-	if($date) {
-		$key="$date ${time[1]}:${time[2]}";
-		if($results[$key]) return $results["$key"];
+	else {
+		$d=$now;
+	}
+	$hrs=12;
+	$min=0;
+	if(
+		isset($_GET["time"]) &&
+		preg_match('/^(\d{1,2})[:.](\d{2})$/', $_GET["time"], $matches) &&
+		$matches[1] >= 0 &&
+		$matches[1] <= 23 &&
+		$matches[2]>=0 &&
+		$matches[2]<=59
+	) {
+		$hrs=$matches[1];
+		$min=$matches[2];
+	}
+	return $d->setTime($hrs, $min);
+}
+function closedcash(DateTime $date=null) {
+	static $cache=[]; #setup cache
+	if($date===null) $date=get_datetime(); #if no date is given, get one yourself
+	$key=$date->format("Y-m-d H:i:s"); #make key for saving and retrieving cache entry
+	if(isset($cache[$key])) return $cache["$key"]; #early exit if cache entry exists
+	$result=query(
+		"select MONEY as id, DATESTART as start, DATEEND as end from CLOSEDCASH where ? between DATESTART and DATEEND",
+		["s", $date->format("Y-m-d H:i:s")]
+	)->fetch_assoc();
+	if($result) {
+		return $cache[$key]=["id"=>$result["id"], "start"=>new DateTime($result["start"]), "end"=>new DateTime($result["end"])];
+	}
+	else {
 		$result=query(
-			"select DATESTART as start, DATEEND as end from CLOSEDCASH where date_add(date_add(?, interval ? hour), interval ? minute) between DATESTART and DATEEND",
-			["sii", $date, $time[1], $time[2]]
+			"select DATEEND as end from CLOSEDCASH where DATEEND in (SELECT max(DATEEND) from CLOSEDCASH)", []
 		)->fetch_assoc();
-		$start=new DateTime($result["start"]);
-		$end=new DateTime($result["end"]);
-		return $results[$key]=["start"=>$start, "end"=>$end];
+		return $cache[$key]=["start"=>new DateTime($result["end"])];
 	}
-	return false;
-}
-function prev_date() {
-	if(!($date=validate_date())) return "";
-	$interval=new DateInterval("P1D");
-	$datetime=new DateTime($date);
-	$newdate=$datetime->sub($interval);
-	return $newdate->format("Y-m-d");
-}
-function next_date() {
-	if(!($date=validate_date())) return "";
-	$interval=new DateInterval("P1D");
-	$datetime=new DateTime($date);
-	$newdate=$datetime->add($interval);
-	return $newdate->format("Y-m-d");
 }
 function tag($name, $attributes = false, ...$contents)
 {
@@ -134,10 +143,8 @@ function process_results($results) {
 	];
 	while($result=$results->fetch_assoc()) {
 		$id=$result["id"];
-		if(!isset($closedcash["start"])) $closedcash["start"]=$result["start"];
-		if(!isset($closedcash["end"])) $closedcash["end"]=$result["end"];
 		if(!isset($data[$id])) {
-			$data[$id]=["payments"=>[], "total"=>0];
+			$data[$id]=["payments"=>[], "total_payments"=>0, "total_sales"=>0];
 			$totals["sales"]+=$result["total"];
 			$totals["sales_tax"]+=$result["sales_tax"];
 			$totals["pst_exempt"]+=$result["pst_exempt"];
@@ -170,10 +177,10 @@ function process_results($results) {
 	$totals["taxes"]=$totals["pst"]+$totals["gst"];
 	return ["totals"=>$totals, "data"=>$data, "closedcash"=>$closedcash];
 }
-function render_data($data) {
+function render_data($closedcash, $data) {
 	echo tag("ul", ["id"=>"closedcash"],
-		tag("li", ["id"=>"start"], $data["closedcash"]["start"]),
-		tag("li", ["id"=>"end"], $data["closedcash"]["end"])
+		tag("li", ["id"=>"start"], $closedcash["start"]->format("M jS H:m")),
+		tag("li", ["id"=>"end"], $closedcash["end"]->format("M jS H:m"))
 	);
 	echo tag("ul", ["id"=>"totals", "class"=>(number_format($data["totals"]["payments"],2)==number_format($data["totals"]["sales"],2)?NULL:"warning")],
 		tag("li", ["id"=>"subtotal"], number_format($data["totals"]["subtotal"], 2)),
@@ -222,9 +229,9 @@ function render_data($data) {
 		));
 	}
 }
-if(($date=validate_date())) {
-	$time=validate_time() ?: ["12:00", 12, 0];
-	render_data(process_results(query($sql, ["sii", $date, $time[1], $time[2]])));
+
+if(isset((closedcash()["id"]))) {
+	render_data(closedcash(), process_results(query($sql, ["s", closedcash()["id"]])));
 }
 	?>
 	<script src="keyboard.js"></script>
