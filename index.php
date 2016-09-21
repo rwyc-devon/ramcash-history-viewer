@@ -141,6 +141,7 @@ function process_results($results) {
 		"sales"=>0,
 		"payments"=>0,
 	];
+	$paymentTotals=[];
 	while($result=$results->fetch_assoc()) {
 		$id=$result["id"];
 		if(!isset($data[$id])) {
@@ -161,6 +162,10 @@ function process_results($results) {
 		elseif($payment=="magcard") {
 			$payment="card";
 		}
+		if(!isset($paymentTotals[$payment])) {
+			$paymentTotals[$payment]=0;
+		}
+		$paymentTotals[$payment]+=$result["total"];
 		$type=isset($matches[2])?"refund":"sale";
 		array_push($data[$id]["payments"], [$payment, $result["amount"]]);
 		$data[$id]["type"]=$type;
@@ -175,14 +180,21 @@ function process_results($results) {
 	$totals["pst"]=($pstRate/($pstRate+$gstRate))*$totals["sales_tax"];
 	$totals["gst"]=($gstRate/($pstRate+$gstRate))*$totals["sales_tax"]+$totals["pst_exempt"];
 	$totals["taxes"]=$totals["pst"]+$totals["gst"];
-	return ["totals"=>$totals, "data"=>$data, "closedcash"=>$closedcash];
+	return ["totals"=>$totals, "paymentTotals"=>$paymentTotals, "data"=>$data, "closedcash"=>$closedcash];
 }
 function render_data($closedcash, $data) {
-	echo tag("ul", ["id"=>"closedcash"],
+	echo tag("ul", ["class"=>"bar", "id"=>"closedcash"],
 		tag("li", ["id"=>"start"], $closedcash["start"]->format("M jS H:m")),
 		tag("li", ["id"=>"end"], $closedcash["end"]->format("M jS H:m"))
 	);
-	echo tag("ul", ["id"=>"totals", "class"=>(number_format($data["totals"]["payments"],2)==number_format($data["totals"]["sales"],2)?NULL:"warning")],
+	$payments="";
+	foreach($data["paymentTotals"] as $name=>$amount) {
+		$payments.=tag("li", ["class"=>"payment"],
+			tag("span", ["class"=>"method method-$name"], $name),
+			tag("span", ["class"=>"amount"], $amount)
+		);
+	}
+	echo tag("ul", ["id"=>"totals", "class"=>"bar ".(number_format($data["totals"]["payments"],2)==number_format($data["totals"]["sales"],2)?NULL:"warning")],
 		tag("li", ["id"=>"subtotal"], number_format($data["totals"]["subtotal"], 2)),
 		tag("li", ["id"=>"taxes"],
 			tag("ul", false, 
@@ -192,7 +204,13 @@ function render_data($closedcash, $data) {
 			)
 		),
 		tag("li", ["class"=>"total"],    number_format($data["totals"]["sales"],    2)),
-		tag("li", ["class"=>"payments"],    number_format($data["totals"]["payments"],    2))
+		tag("li",
+			["id"=>"payments"],
+			tag("ul", false,
+				$payments,
+				tag("li", ["class"=>"total"], number_format($data["totals"]["payments"], 2))
+			)
+		)
 	);
 	foreach($data["data"] as $id=>$item) {
 		$diff=abs(round($item["total_sales"],2)-round($item["total_payments"],2));

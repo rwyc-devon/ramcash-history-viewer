@@ -119,8 +119,7 @@ input:last-of-type
 		display: none;
 	}
 }
-#totals,
-#closedcash
+.bar
 {
 	padding-left: 0.25em;
 	display: flex;
@@ -130,8 +129,7 @@ input:last-of-type
 	padding: 0.25em;
 	border-bottom: 1px solid #666;
 }
-#totals > li,
-#closedcash > li
+.bar > li
 
 {
 	color: #fff;
@@ -152,25 +150,9 @@ input:last-of-type
 	margin-left: 1ex;
 	content: "end:";
 }
-#totals.warning
+.bar.warning
 {
 	background: #600;
-}
-#totals .payments::before
-{
-	content: "=";
-	margin-right:0.25ex;
-}
-#totals.warning .payments::before
-{
-	content: "≠"
-}
-#totals .payments::after
-{
-	content: "paid";
-	font-weight: normal;
-	font-style: italic;
-	margin-left: 0.5ex;
 }
 #subtotal::before
 {
@@ -178,7 +160,7 @@ input:last-of-type
 	font-style: italic;
 	font-weight: normal;
 }
-#taxes ul
+.bar li ul
 {
 	display: flex;
 	list-style-type: none;
@@ -189,12 +171,24 @@ input:last-of-type
 	margin: 0 0.5em;
 	font-weight: normal;
 }
-#taxes ul::before
+.bar li ul::before
 {
 	font-style: italic;
+}
+#taxes ul::before
+{
 	content: "Taxes: ";
 }
-#taxes li:not(.total)
+#payments ul::before
+{
+	content: "Payments: ";
+}
+.bar li li .method
+{
+	margin-left: -0.25em;
+	margin-right: 0.25em;
+}
+.bar li li:not(.total)
 {
 	background: #bbb;
 	padding: 0 0.25em;
@@ -202,11 +196,11 @@ input:last-of-type
 	border-radius: 0.375em;
 	overflow: hidden;
 }
-#taxes li.total
+.bar li li.total
 {
 	font-weight: bold;
 }
-#taxes li::before
+.bar li li::before
 {
 	background: #222;
 	color: #fff;
@@ -221,7 +215,7 @@ input:last-of-type
 {
 	content: "GST";
 }
-#totals > .total::before
+.bar > .total::before
 {
 	content: "Total: ";
 	font-style: italic;
@@ -313,27 +307,27 @@ section header time
 {
 	background: #d88;
 }
-.payments li .method
+.method
 {
 	padding: 0 0.25em 0 0.5em;
 	background: #222;
 	color: #fff;
 }
-.warning .payment .method,
-.warning header .id
+.method,
+.id
 {
 	background: #622;
 }
-.payments li .method-cash,
-.payments li .method-cheque
+.method-cash,
+.method-cheque
 {
 	background: #161;
 }
-.payments li .method-note
+.method-note
 {
 	background: #631;
 }
-.payments li .method-card
+.method-card
 {
 	background: #416;
 }
