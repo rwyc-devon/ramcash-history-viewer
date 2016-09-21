@@ -165,7 +165,7 @@ function process_results($results) {
 		if(!isset($paymentTotals[$payment])) {
 			$paymentTotals[$payment]=0;
 		}
-		$paymentTotals[$payment]+=$result["total"];
+		$paymentTotals[$payment]+=$result["amount"];
 		$type=isset($matches[2])?"refund":"sale";
 		array_push($data[$id]["payments"], [$payment, $result["amount"]]);
 		$data[$id]["type"]=$type;
@@ -191,7 +191,7 @@ function render_data($closedcash, $data) {
 	foreach($data["paymentTotals"] as $name=>$amount) {
 		$payments.=tag("li", ["class"=>"payment"],
 			tag("span", ["class"=>"method method-$name"], $name),
-			tag("span", ["class"=>"amount"], $amount)
+			tag("span", ["class"=>"amount"], number_format($amount, 2))
 		);
 	}
 	echo tag("ul", ["id"=>"totals", "class"=>"bar ".(number_format($data["totals"]["payments"],2)==number_format($data["totals"]["sales"],2)?NULL:"warning")],
