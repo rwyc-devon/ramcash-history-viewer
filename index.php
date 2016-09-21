@@ -1,6 +1,16 @@
 <?php
 require_once("include/db.php");
 require_once("config.php");
+define("paymentOrder", ["cash", "card", "note"]);
+function paymentSort($a, $b)
+{
+	$l=count(paymentOrder);
+	$ia=array_search($a, paymentOrder);
+	$ib=array_search($b, paymentOrder);
+	if($ia===false) $ia=$l;
+	if($ib===false) $ib=$l;
+	return $ia <=> $ib;
+}
 ?><!DOCTYPE html>
 <html>
 	<head>
@@ -66,7 +76,6 @@ group by
 	RECEIPTS.DATENEW,
 	PAYMENTS.ID
 EOQ;
-#TODO: at some point we can switch to CLOSEDCASH id, saving on a bunch of probably expensive date logic
 function get_datetime() {
 	static $now=false;
 	if($now===false) $now=new DateTime(); #this way we don't have to worry if execution takes too long
@@ -173,8 +182,11 @@ function process_results($results) {
 		$data[$id]["total_payments"]+=$result["amount"];
 	}
 	foreach($data as $item) {
-		ksort($item["payments"]);
+		usort($item["payments"], function($a, $b){
+			return paymentSort($a[0], $b[0]);
+		});
 	}
+	uksort($paymentTotals, "paymentSort");
 	$gstRate=$config["gst"]/100;
 	$pstRate=$config["pst"]/100;
 	$totals["pst"]=($pstRate/($pstRate+$gstRate))*$totals["sales_tax"];
