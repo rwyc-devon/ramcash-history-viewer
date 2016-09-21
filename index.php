@@ -1,7 +1,7 @@
 <?php
 require_once("include/db.php");
 require_once("config.php");
-define("paymentOrder", ["cash", "card", "note"]);
+define("paymentOrder", ["cash", "cheque", "card", "note"]);
 function paymentSort($a, $b)
 {
 	$l=count(paymentOrder);
