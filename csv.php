@@ -1,0 +1,34 @@
+<?php
+header("Content-type: text/plain");
+require_once("include/db.php");
+require_once("include/openbravo.php");
+require_once("config.php");
+function csvnum($num) {
+	return $num? round($num, 2): "";
+}
+function csv_line($data) {
+	if($data) {
+		$fields=[
+			csvnum(get_payment_total($data, "cash") + get_payment_total($data, "cheque")),
+			csvnum(get_payment_total($data, "note")),
+			csvnum($data["totals"]["subtotal"]),
+			csvnum($data["totals"]["pst"]),
+			csvnum($data["totals"]["gst"]),
+		];
+	}
+	else {
+		$fields=["", "", "", "", ""];
+	}
+	return "\"" . join("\", \"", $fields) . "\"\n";
+}
+function csv_line_from_date($date) {
+	return csv_line(day_data($date, false));
+}
+$date=get_datetime()->modify("first day of this month");
+$end=(clone $date)->modify("last day of this month");
+echo "\"Day\", \"Cash\", \"Note\", \"Sales\", \"PST\", \"GST\"\n";
+while($date<=$end) {
+	$day=$date->format("d");
+	echo "\"$day\", " . csv_line_from_date($date);
+	$date->modify("tomorrow");
+}
