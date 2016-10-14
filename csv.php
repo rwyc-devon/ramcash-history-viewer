@@ -24,10 +24,10 @@ function csv_line($data) {
 function csv_line_from_date($date) {
 	return csv_line(day_data($date, false));
 }
-$date=get_datetime()->modify("first day of this month");
-$end=(clone $date)->modify("last day of this month");
+$date=get_datetime()->modify("first day of this month")->setTime(12,0);
+$end=(clone $date)->modify("first day of next month");
 echo "\"Day\", \"Cash\", \"Note\", \"Sales\", \"PST\", \"GST\"\n";
-while($date<=$end) {
+while($date<$end) {
 	$day=$date->format("d");
 	echo "\"$day\", " . csv_line_from_date($date);
 	$date->modify("tomorrow");
