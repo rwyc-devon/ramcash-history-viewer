@@ -30,5 +30,5 @@ echo "\"Day\", \"Cash\", \"Note\", \"Sales\", \"PST\", \"GST\"\n";
 while($date<$end) {
 	$day=$date->format("d");
 	echo "\"$day\", " . csv_line_from_date($date);
-	$date->modify("tomorrow");
+	$date->modify("tomorrow")->setTime(12,0);
 }
