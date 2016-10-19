@@ -41,7 +41,7 @@ where
 	CLOSEDCASH.MONEY=?
 
 group by
-	RECEIPTS.DATENEW,
+	TICKETS.TICKETID,
 	PAYMENTS.ID
 EOQ;
 function get_datetime($str=null) {
