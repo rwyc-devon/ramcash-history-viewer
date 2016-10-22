@@ -87,9 +87,9 @@ function closedcash(DateTime $date=null) {
 		return $cache[$key]=["start"=>new DateTime($result["end"])];
 	}
 }
-function closedcash_sameday(DateTime $date=null) {
+function closedcash_sameday(DateTime $date) {
 	$closedcash=closedcash($date);
-	return ($date->format("Y-m-d") == $closedcash["end"]->format("Y-m-d"))? $closedcash : null;
+	return ($date->diff($closedcash["end"])->d > 0) ? null : $closedcash;
 }
 function process_results($results) {
 	global $config;
