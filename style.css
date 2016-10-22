@@ -25,10 +25,14 @@ form
 	justify-content: center;
 	box-shadow: 0.25em 0.25em 0.5em #ddd;
 }
-form a
+form a[rel]
 {
 	flex-grow: 1;
 	position: relative;
+}
+form a.csvbutton
+{
+	margin: 0 0.5em;
 }
 form a[rel="prev"]::before,
 form a[rel="next"]::before

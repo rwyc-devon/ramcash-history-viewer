@@ -15,6 +15,7 @@ require_once("config.php");
 if(closedcash())
 	echo "href='" . closedcash()["start"]->sub(new DateInterval("PT1M"))->format('?\\d\\a\\t\\e=Y-m-d&\\t\\i\\m\\e=H:i') . "'";
 			?>></a>
+			<a class="csvbutton" title="Download this month as a CSV file" href="<?php echo get_datetime()->format("Y-m")?>.csv">CSV</a>
 			<label for="datein">Date</label><input id="datein" name="date" placeholder="yyyy-mm-dd" type="date" value="<?php echo get_datetime()->format("Y-m-d")?>"></input>
 			<input id="time" name="time" placeholder="hh:mm" type="time" value="<?php echo get_datetime()->format("H:i")?>"></input>
 			<input type="submit"></input>
